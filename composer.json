@@ -1,0 +1,21 @@
+{
+    "name": "aimedidierm/fdisms",
+    "description": "This is a php library to help developers include sms service, with FDI SMS gateway from RWANDA.",
+    "type": "library",
+    "require": {
+        "guzzlehttp/guzzle": "7.5.x-dev"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Aimedidierm\\FdiSms\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "aimedidierm",
+            "email": "aimedidiermugisha@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
