@@ -9,6 +9,7 @@ $sms->SingleSms(
     $sender_id = "", // Your User ID provided by FDI
     $phone = "", // Receiver phone number
     $message = "", // Text message to be send
-    $ref = "" // Your unique message reference ID
+    $ref = "", // Your unique message reference ID
+    $callBackURL = "" //Optional Delivery Report destination
 );
 echo $sms;
