@@ -1,6 +1,6 @@
 {
     "name": "aimedidierm/fdisms",
-    "description": "This is a php library to help developers include sms service, with FDI SMS gateway from RWANDA.",
+    "description": "This is a PHP library to help developers include SMS service with FDI SMS gateway from Rwanda.",
     "type": "library",
     "license": "MIT",
     "autoload": {
@@ -14,5 +14,5 @@
             "email": "aimedidiermugisha@gmail.com"
         }
     ],
-    "minimum-stability": "dev"
+    "minimum-stability": "stable"
 }
