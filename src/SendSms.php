@@ -88,10 +88,6 @@ class sendSms
             throw new \Exception('Invalid JSON response from the API');
         }
 
-        if ($responseData['success']) {
-            throw new \Exception($responseData['message']);
-        }
-
         return $responseData;
     }
 }
