@@ -7,7 +7,7 @@ This is a php library to help developers include sms service, with FDI sms gatew
 Install this package as a dependency using [Composer](https://getcomposer.org).
 
 ```bash
-composer require aimedidierm/fdi-sms
+composer require aimedidierm/fdisms
 ```
 
 ## Usage
@@ -15,22 +15,35 @@ composer require aimedidierm/fdi-sms
 This is the documantion
 
 ```php
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
 use Aimedidierm\FdiSms\SendSms;
 
-$sms = new SendSms;
-$sms->SingleSms(
-    $username = "", // Your API Username provided by FDI
-    $password = "", // Your API Password provided by FDI
-    $sender_id = "", // Your User ID provided by FDI
-    $phone = "", // Receiver phone number
-    $message = "", // Text message to be send
-    $ref = "", // Your unique message reference ID
-    $callBackURL = "" //Optional Delivery Report destination
-);
-print_r($sms->SingleSms());
+$to = ""; // Receiver phone number
+$message = "";  // Text message to be send
+$senderId = ""; // Your User ID provided by FDI
+$ref = "";  // Your unique message reference ID
+$callbackUrl = "";  //Optional Delivery Report destination
+
+try {
+$apiUsername = "";  // Your API Username provided by FDI
+$apiPassword = "";  // Your API Password provided by FDI
+$smsSender = new SendSms($apiUsername, $apiPassword);
+
+$response = $smsSender->sendSms($to, $message, $senderId, $ref, $callbackUrl);
+
+if ($response['success']) {
+return response()->json(['message' => 'SMS sent successfully']);
+} else {
+return response()->json(['message' => $response['message'], 500]);
+}
+} catch (\Exception $e) {
+return response()->json(['message' => $e->getMessage()], 500);
+}
 
 ```
-
 
 NB: For some people who are not using composer remember to add:
 

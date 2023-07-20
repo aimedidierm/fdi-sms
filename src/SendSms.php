@@ -2,89 +2,96 @@
 
 namespace Aimedidierm\FdiSms;
 
-use Exception;
-
-class SendSms
+class sendSms
 {
-    private function authFDISMS($SMSSECRET, $SMSID)
+    private $baseUrl;
+    private $bearerToken;
+
+    public function __construct($apiUsername, $apiPassword)
     {
-        if (empty($SMSSECRET)) {
-            throw new Exception("SMSSECRET is required.");
-        }
-        if (empty($SMSID)) {
-            throw new Exception("SMSID is required.");
-        }
-
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, "https://messaging.fdibiz.com/api/v1/auth/");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-            "api_username" => $SMSID,
-            "api_password" => $SMSSECRET
-        ]));
-
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/json",
-            "Accept: application/json"
-        ));
-
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $decodedResponse = json_decode($response, true);
-        return $decodedResponse;
+        $this->baseUrl = 'https://messaging.fdibiz.com/api/v1/';
+        $this->bearerToken = $this->getBearerToken($apiUsername, $apiPassword);
     }
 
-    public function SingleSms($username, $password, $sender_id, $phone, $message, $ref, $callBackURL)
+    private function getBearerToken($apiUsername, $apiPassword)
     {
-        if (empty($username)) {
-            throw new Exception("Username is required.");
-        }
-        if (empty($password)) {
-            throw new Exception("Password is required.");
-        }
-        if (empty($phone)) {
-            throw new Exception("Phone number is required.");
-        }
-        if (empty($message)) {
-            throw new Exception("Message is required.");
-        }
-        if (empty($ref)) {
-            throw new Exception("Reference is required.");
-        }
-
-        $auth = $this->authFDISMS($password, $username);
-        $token = $auth["access_token"];
-        var_dump($token);
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, "https://messaging.fdibiz.com/api/v1/mt/single");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-
+        $ch = curl_init($this->baseUrl . 'auth/');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-            "msisdn" => $phone,
-            "message" => $message,
-            "msgRef" => $ref,
-            "dlr" => $callBackURL,
-            "sender_id" => $sender_id
+            'api_username' => $apiUsername,
+            'api_password' => $apiPassword,
         ]));
 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/json",
-            "Accept: application/json",
-            "Authorization" => "Bearer " . $token
-        ));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+        ]);
 
         $response = curl_exec($ch);
         curl_close($ch);
+        if (!$response) {
+            throw new \Exception('Empty response from the API');
+        }
 
-        var_dump($response);
+        $responseData = json_decode($response, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \Exception('Invalid JSON response from the API');
+        }
+
+        if ($responseData === null || !isset($responseData['access_token'])) {
+            throw new \Exception('Failed to get Bearer token');
+        }
+
+        return $responseData['access_token'];
+    }
+
+    public function sendSms($to, $message, $senderId, $ref, $callbackUrl)
+    {
+        if (empty($to)) {
+            throw new \Exception("Receiver hone number is required.");
+        }
+        if (empty($message)) {
+            throw new \Exception("Message is required.");
+        }
+        if (empty($ref)) {
+            throw new \Exception("Reference is required.");
+        }
+        $data = [
+            'msisdn' => $to,
+            'message' => $message,
+            'sender_id' => $senderId,
+            'msgRef' => $ref,
+            'dlr' => $callbackUrl,
+        ];
+
+        $ch = curl_init($this->baseUrl . 'mt/single');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $this->bearerToken,
+            'Content-Type: application/json',
+        ]);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+        if ($response == null) {
+            throw new \Exception('Empty response from the API');
+        }
+
+        $responseData = json_decode($response, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \Exception('Invalid JSON response from the API');
+        }
+
+        if ($responseData['success']) {
+            throw new \Exception($responseData['message']);
+        }
+
+        return $responseData;
     }
 }
