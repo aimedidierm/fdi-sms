@@ -2,7 +2,7 @@
 
 namespace Aimedidierm\FdiSms;
 
-class sendSms
+class SendSms
 {
     private $baseUrl;
     private $bearerToken;
